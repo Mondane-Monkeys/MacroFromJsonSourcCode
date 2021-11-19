@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-16">
+		<attributes>
+			<attribute name="module" value="true"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="E:/School/Comp 1010/Process/processing-3.5.4/core/library/core.jar"/>
+	<classpathentry kind="lib" path="E:/School/Comp 1010/Process/processing-3.5.4/lib/pde.jar"/>
+	<classpathentry kind="lib" path="E:/School/Comp 1010/EclipseWorkspace/Packages/json-simple-1.1 (2021_10_06 20_37_05 UTC).jar"/>
+	<classpathentry kind="output" path="bin"/>
+</classpath>
