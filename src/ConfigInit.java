@@ -15,7 +15,9 @@ import java.awt.Desktop;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
+import java.io.PrintWriter;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.ArrayList;
 
@@ -32,15 +34,23 @@ import org.json.simple.parser.*;
 
 public class ConfigInit {
 
+	public static void Test() {
+		System.out.println(MacroFromJson.RelativePath);
+		System.out.println(MacroFromJson.filePath + ": " + checkFileExists(MacroFromJson.filePath));
+		System.out.println(MacroFromJson.RelativePath+": "+checkFileExists(MacroFromJson.RelativePath));
+		
+		createJson("config//thisTest.json");
+		System.out.println(bakJson(MacroFromJson.filePath, MacroFromJson.fileName));
+	}
 	public static void generateJsonFile() {
 		String relativePath = MacroFromJson.RelativePath;
 		String filePath = MacroFromJson.filePath;
+		String fileName = MacroFromJson.fileName;
 
-		if (checkFolderExists(filePath)) {
+		if (checkFileExists(filePath)) {
 			if (checkFileExists(relativePath)) {
 				// backup (count files in dir, backup+count) delete and create
-				bakJson(relativePath);
-				dumpJson(relativePath);
+				bakJson(filePath, fileName);
 				createJson(relativePath);
 			} else {
 				// create macro.json
@@ -54,10 +64,10 @@ public class ConfigInit {
 
 	}
 
-	private static boolean checkFolderExists(String path) {
-		File myFile = new File(path);
-		return myFile.exists();
-	}
+//	private static boolean checkFolderExists(String path) {
+//		File myFile = new File(path);
+//		return myFile.exists();
+//	}
 
 	private static boolean checkFileExists(String path) {
 		File myFile = new File(path);
@@ -65,40 +75,59 @@ public class ConfigInit {
 	}
 
 	private static void createJson(String path) {
-		File myFile = new File(path);
-		myFile.createNewFile();
-		fillJson(path);
+		try {
+			File myFile = new File(path);
+			myFile.createNewFile();
+			fillJson(path);
+		} catch (Exception e) {
+			System.out.println(e);
+		}
+		
 	}
 
-	private static void bakJson(String filePath, String fileName) {
+	private static boolean bakJson(String filePath, String fileName) {
+		System.out.println("bakJson");
+		System.out.println(filePath);
+		System.out.println(fileName);
 		File myFile = new File(filePath + fileName);
 		File myFolder = new File(filePath);
 		if (!isJson(myFile)) {
 			System.out.println("Error: \n" + "ConfigInit.bakJson: Is not Json!!");
-		}
-		File[] filesInConfig = myFolder.listFiles;
+		} else {System.out.println("here");}
+		
+		File[] filesInConfig = myFolder.listFiles();
 		int fileCount = filesInConfig.length;
-		myFile.renameTo(filePaht + fileCount + fileName + ".bak");
+		File destFile = new File(filePath + fileCount + fileName + ".bak");
+		File test = new File ("test");
+		File test2 = new File("config//thisTest.json");
+		return test2.renameTo(test);
 	}
 
 	private static void createConfig(String path) {
-		File myFile = new File(path);
-		myFile.createNewFile();
-		createJson(path);
+		try {
+			File myFile = new File(path);
+			myFile.createNewFile();
+			createJson(path);
+		} catch (Exception e) {
+			System.out.println(e);
+		}
+		
 	}
 
-	private static void isJson(file jsonFile) {
+	private static boolean isJson(File jsonFile) {
 		String extension = "";
 		try {
 			if (jsonFile != null && jsonFile.exists()) {
-				String name = file.getName();
+				String name = jsonFile.getName();
 				extension = name.substring(name.lastIndexOf("."));
 			}
 		} catch (Exception e) {
 			System.out.println("ConfigInit.isJson: \n" + e);
 		}
-		System.out.println("ConfigInit.isJson extension = " + extension);
-		return (extension == ".json");
+		System.out.println("ConfigInit.isJson extension = |" + extension + "|");
+		System.out.println(extension.equals(".json"));
+		boolean isSame = (extension.equals(".json"));
+		return isSame;
 	}
 
 	private static void fillJson(String path) {
@@ -111,8 +140,8 @@ public class ConfigInit {
 
 		// for macros, first create JSONArray
 		JSONArray ja = new JSONArray();
-
-		m = new LinkedHashMap(2);
+		
+		Map m = new LinkedHashMap(2);
 		m.put("key", "home");
 		m.put("code", "212 555-1234");
 		m.put("carBack", "0");

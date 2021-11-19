@@ -87,7 +87,8 @@ public class MacroFromJson implements Tool, KeyListener {
 		}
 		if (ke.getKeyCode() == KeyEvent.VK_B && ke.isControlDown() && ke.isShiftDown()) {
 			System.out.println("hi1");
-			ConfigInit.generateJsonFile();
+//			ConfigInit.generateJsonFile();
+			ConfigInit.Test();
 		} else if (ke.getKeyCode() == KeyEvent.VK_B && ke.getModifiersEx() == InputEvent.CTRL_DOWN_MASK) {
 			try {
 				File myPath = new File(RelativePath);
