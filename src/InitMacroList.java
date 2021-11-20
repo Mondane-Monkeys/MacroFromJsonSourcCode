@@ -23,12 +23,13 @@ import org.json.simple.parser.*;
 public class InitMacroList {
 
 
-	public static Macros[] parseMacro() {
+	public static Macros[] parseMacro(String jsonPath) {
 		Macros[] returnArray = {};
 //		ConfigInit.updatePath();
 		try {
 			//Get json object from file
-			Object obj = new JSONParser().parse(new FileReader(MacroFromJson.RelativePath));
+			FileReader fileRead = new FileReader(jsonPath);
+			Object obj = new JSONParser().parse(fileRead);
 			JSONObject jo = (JSONObject) obj;
 			
 			//Parse json object and concat to returnArray
@@ -36,6 +37,7 @@ public class InitMacroList {
 			returnArray = concatMacroArrays(returnArray, jsonArrayParser(jo, "macros"));
 			returnArray = concatMacroArrays(returnArray, jsonArrayParser(jo, "replaceMacros"));
 			System.out.println(returnArray.length + " macros found.");
+			fileRead.close();
 		} catch (Exception e) {
 			System.out.println("InitMacroList: \n" + e);
 		}

@@ -62,7 +62,7 @@ public class MacroFromJson implements Tool, KeyListener {
 		editor = base.getActiveEditor();
 		editor.getTextArea().addKeyListener(this);
 		try {
-			macroList = InitMacroList.parseMacro();
+			macroList = InitMacroList.parseMacro(RelativePath);
 		} catch (Exception e) {
 			System.out.println("InitFailed");
 			System.out.println(e);
@@ -92,7 +92,6 @@ public class MacroFromJson implements Tool, KeyListener {
 		} else if (ke.getKeyCode() == KeyEvent.VK_B && ke.getModifiersEx() == InputEvent.CTRL_DOWN_MASK) {
 			try {
 				File myPath = new File(RelativePath);
-				;
 				Desktop desktop = Desktop.getDesktop();
 				desktop.open(myPath);
 				System.out.println("hi");
