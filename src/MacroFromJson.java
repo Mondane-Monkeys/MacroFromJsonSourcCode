@@ -40,20 +40,20 @@ public class MacroFromJson implements Tool, KeyListener {
 
 	Base base;
 	Editor editor;
-	
-	//String variables to specify the macros.json file
+
+	// String variables to specify the macros.json file
 	public static String parentPath = "config//";
 	public static String shortFileName = "macros";
 	public static String fileName = shortFileName + ".json";
 	public static String relativePath = parentPath + fileName;
-	
-	//Array to store all macros. Populated by initMacroList class
+
+	// Array to store all macros. Populated by initMacroList class
 	public static Macros[] macroList;
-	
-	//State variables used for ctrl+b interface
+
+	// State variables used for ctrl+b interface
 	private static boolean openExplorer = true;
 	private static boolean setDefault = false;
-	
+
 	// In Processing 3, the "Base" object is passed instead of an "Editor"
 	public void init(Base base) {
 		// Store a reference to the Processing application itself
@@ -66,9 +66,9 @@ public class MacroFromJson implements Tool, KeyListener {
 		System.out.println();
 		editor = base.getActiveEditor();
 		editor.getTextArea().addKeyListener(this);
-		
-		checkConfig();//Checks macros.json exists or warns user to create
-		
+
+		checkConfig();// Checks macros.json exists or warns user to create
+
 		try {
 			macroList = InitMacroList.parseMacro(relativePath);
 		} catch (Exception e) {
@@ -81,22 +81,21 @@ public class MacroFromJson implements Tool, KeyListener {
 		return "MacroFromJson";
 	}
 
-	
 	/**
 	 * Captures user command inputs
 	 * 
-	 * On ctrl+Space checks text before the caret to find a match in macroList
-	 * and runs Macros.instert on that instance
+	 * On ctrl+Space checks text before the caret to find a match in macroList and
+	 * runs Macros.instert on that instance
 	 * 
-	 * On first ctrl+b opens file location of macros.json 
-	 * On second ctrl+b re-initializes macroList to catch user changes
+	 * On first ctrl+b opens file location of macros.json On second ctrl+b
+	 * re-initializes macroList to catch user changes
 	 * 
-	 * On first ctrl+shift+b, warns user of file modification
-	 * On second, runs ConfigInit.generateJsonFile()
+	 * On first ctrl+shift+b, warns user of file modification On second, runs
+	 * ConfigInit.generateJsonFile()
 	 */
 	@Override
 	public void keyPressed(KeyEvent ke) {
-		//Runs when ctrl+space are pressed. 
+		// Runs when ctrl+space are pressed.
 		if (ke.getKeyCode() == KeyEvent.VK_SPACE && ke.getModifiersEx() == InputEvent.CTRL_DOWN_MASK) {
 			ke.consume();
 			String txt = getTextBeforeCaret();
@@ -106,31 +105,37 @@ public class MacroFromJson implements Tool, KeyListener {
 				m.insert(editor, indent);
 			}
 		}
-		//Runs when ctrl+shift+b are pressed. Used to create new macro file.
+		// Runs when ctrl+shift+b are pressed. Used to create new macro file.
 		if (ke.getKeyCode() == KeyEvent.VK_B && ke.isControlDown() && ke.isShiftDown()) {
 			if (setDefault) {
 				ConfigInit.generateJsonFile();
+				macroList = InitMacroList.parseMacro(relativePath);
 				setDefault = false;
 			} else {
-			System.out.println("Are you sure you want to restore default macros?");
-			System.out.println("Press ctrl+shift+b again to confirm");
-			System.out.println("Press ctrl+b to cancel");
-			setDefault = true;
+				System.out.println("\n\n\n");
+				System.out.println("Are you sure you want to restore default macros?");
+				System.out.println("Press ctrl+shift+b again to confirm");
+				System.out.println("Press ctrl+b to cancel");
+				System.out.println("");
+				setDefault = true;
 			}
 		}
-		//Runs when ctrl+b are pressed. Used to open macro file and re-initialize the macroList
+		// Runs when ctrl+b are pressed. Used to open macro file and re-initialize the
+		// macroList
 		if (ke.getKeyCode() == KeyEvent.VK_B && ke.getModifiersEx() == InputEvent.CTRL_DOWN_MASK) {
 			setDefault = false;
 			try {
-				if(openExplorer) {
-				File myPath = new File(parentPath);
-				Desktop desktop = Desktop.getDesktop();
-				desktop.open(myPath);
-				System.out.println("After making changes to the Json file, press ctrl+b to enable new macros.");
-				openExplorer = false;
+				if (openExplorer) {
+					File myPath = new File(parentPath);
+					Desktop desktop = Desktop.getDesktop();
+					desktop.open(myPath);
+					System.out.println("\n\n\n");
+					System.out.println("After making changes to the Json file, press ctrl+b to enable new macros.");
+					openExplorer = false;
 				} else {
 					macroList = InitMacroList.parseMacro(relativePath);
 					System.out.println("Macro list has been updated");
+					System.out.println("");
 					openExplorer = true;
 				}
 			} catch (Exception e) {
@@ -163,7 +168,9 @@ public class MacroFromJson implements Tool, KeyListener {
 	}
 
 	/**
-	 * Gets chracters of the word immediately behind caret until last space character
+	 * Gets chracters of the word immediately behind caret until last space
+	 * character
+	 * 
 	 * @return word before the caret
 	 */
 	private String getTextBeforeCaret() {
@@ -208,8 +215,8 @@ public class MacroFromJson implements Tool, KeyListener {
 	}
 
 	/**
-	 * Ensures either the macros.json file exists
-	 * Or prompts user to create new file.
+	 * Ensures either the macros.json file exists Or prompts user to create new
+	 * file.
 	 */
 	private static void checkConfig() {
 		File myFile = new File(relativePath);
@@ -227,8 +234,10 @@ public class MacroFromJson implements Tool, KeyListener {
 			System.out.println(myPath);
 			System.out.println("Press ctrl+b to open file location");
 			System.out.println("Press ctrl+shift+b to generate default jsonFile");
-			System.out.println();
+			System.out.println("");
 			System.out.println(e);
+			System.out.println("\n\n\n");
+			
 		}
 	}
 }

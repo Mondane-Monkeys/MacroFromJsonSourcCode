@@ -58,10 +58,7 @@ public class ConfigInit {
 		File configFile = new File(relativePath);
 		if (configDir.exists()) {
 			if (configFile.exists()) {
-				boolean bakSuccess = bakJson(configFile, shortFileName);
-				if (bakSuccess) {
-					createJson(configFile);
-				}
+				bakJson(configFile, shortFileName);
 			} else {
 				// create macro.json
 				createJson(configFile);
@@ -93,22 +90,25 @@ public class ConfigInit {
 	private static boolean bakJson(File source, String bakFileName) {
 		try {
 			String folderPath = source.getParent();
-			File backup;
+			File backup = new File(folderPath + "//" + bakFileName + "Bak" + ".json");
 			int attempts = 0;
 			boolean bakMade = false;
 			while (!bakMade && attempts < 10) {
 				backup = new File(folderPath + "//" + bakFileName + "Bak" + attempts + ".json");
 				attempts++;
 				bakMade = source.renameTo(backup);
-				if (bakMade) {
-					System.out.println("\nBackup of: " + source.getName() + "\nCreated at: " + backup.getName() + "\n");
-					System.out.println("Press ctrl+b to open file location");
-					createJson(source);
-				} else {
-					System.out.println("\nError: Backup Failed");
-					System.out.println(
-							"Processing does not have file editing permissions. Please install config file manually");
-				}
+			}
+			if (bakMade) {
+				System.out.println("\nBackup of: " + source.getName() + "\nCreated at: " + backup.getName());
+				System.out.println("Press ctrl+b to open file location\n");
+				createJson(source);
+			} else if (attempts == 10) {
+				System.out.println("\nError: too many backups in config folder");
+				System.out.println("Press ctrl+b to open file location");
+			} else {
+				System.out.println("\nError: Backup Failed");
+				System.out.println(
+						"Processing does not have file editing permissions. Please install config file manually");
 			}
 			return bakMade;
 		} catch (Exception e) {
