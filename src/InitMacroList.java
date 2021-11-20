@@ -21,30 +21,34 @@ import org.json.simple.JSONObject;
 import org.json.simple.parser.*;
 
 public class InitMacroList {
-
-
+	
+	/**
+	 * Takes json file and parses into a Macros[] array
+	 * @param jsonPath
+	 * @return 
+	 */
 	public static Macros[] parseMacro(String jsonPath) {
 		Macros[] returnArray = {};
-//		ConfigInit.updatePath();
 		try {
-			//Get json object from file
+			// Get json object from file
 			FileReader fileRead = new FileReader(jsonPath);
 			Object obj = new JSONParser().parse(fileRead);
 			JSONObject jo = (JSONObject) obj;
-			
-			//Parse json object and concat to returnArray
-			returnArray = concatMacroArrays(returnArray, genBoolArray(jo));
-			returnArray = concatMacroArrays(returnArray, jsonArrayParser(jo, "macros"));
-			returnArray = concatMacroArrays(returnArray, jsonArrayParser(jo, "replaceMacros"));
-			System.out.println(returnArray.length + " macros found.");
 			fileRead.close();
+
+			// Parse json object and concat to returnArray
+			returnArray = concatMacroArrays(returnArray, genBoolArray(jo));
+			returnArray = concatMacroArrays(returnArray, jsonArrayParser(jo, "macros", false));
+			returnArray = concatMacroArrays(returnArray, jsonArrayParser(jo, "replaceMacros", true));
+			System.out.println(returnArray.length + " macros found.");
+			
 		} catch (Exception e) {
 			System.out.println("InitMacroList: \n" + e);
 		}
 		return returnArray;
 	}
 
-	private static Macros[] jsonArrayParser(JSONObject jo, String macroType) {
+	private static Macros[] jsonArrayParser(JSONObject jo, String macroType, boolean isReplace) {
 		Macros[] returnArray = {};
 		JSONArray ja = (JSONArray) jo.get(macroType);
 		Iterator itr = ja.iterator();
@@ -55,7 +59,11 @@ public class InitMacroList {
 			String key = (String) thisMacro.get("key");
 			String code = (String) thisMacro.get("code");
 			long carBack = (long) thisMacro.get("carBack");
-			returnArray[i] = new Macros(key, code, (int) carBack);
+			if (!isReplace) {
+				returnArray[i] = new Macros(key, code, (int) carBack);
+			} else if (isReplace) {
+				returnArray[i] = new ReplaceMacros(key, code, (int) carBack);
+			}
 			i++;
 		}
 		return returnArray;
@@ -69,11 +77,12 @@ public class InitMacroList {
 		System.arraycopy(array2, 0, returnArray, arr1Len, arr2Len);
 		return returnArray;
 	}
-	
+
 	private static Macros[] genBoolArray(JSONObject jo) {
 		Macros[] returnArray = {};
 		boolean functionMacroToggle = (boolean) jo.get("FunctionMacros");
 		boolean codeSkeletonToggle = (boolean) jo.get("CodeSkeletonMacro");
+		boolean inputToggle = (boolean) jo.get("input");
 		if (codeSkeletonToggle) {
 			Macros[] codeSkelArr = {new CodeSkeletonMacro()};
 			returnArray = concatMacroArrays(returnArray, codeSkelArr);
@@ -81,6 +90,14 @@ public class InitMacroList {
 		if (functionMacroToggle) {
 			Macros[] functMacroArr = {new FunctionMacro()};
 			returnArray = concatMacroArrays(returnArray, functMacroArr);
+		}
+		if (inputToggle) {
+			Macros[] inputMacros = {
+					new ReplaceMacros("input", "JOptionPane.showInputDialog(\"\")",2, "import javax.swing.JOptionPane;\n"),
+			        new ReplaceMacros("output", "JOptionPane.showMessageDialog(null, \"\");",3, "import javax.swing.JOptionPane;\n"),
+			        new ReplaceMacros("inputstr", "String str = JOptionPane.showInputDialog(\"\");",3, "import javax.swing.JOptionPane;\n")
+			};
+			returnArray = concatMacroArrays(returnArray, inputMacros);
 		}
 		return returnArray;
 	}

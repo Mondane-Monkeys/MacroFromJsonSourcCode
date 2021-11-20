@@ -25,7 +25,7 @@ import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.*;
 
-//MacroFromJson.RelativePath
+//MacroFromJson.relativePath
 //MacroFromJson.fileName
 //MacroFromJson.filePath
 
@@ -33,86 +33,103 @@ import org.json.simple.parser.*;
 //Open file explorer
 
 public class ConfigInit {
-	
+
 	private static String bakFileName = "bakMacros";
 
 	public static void Test() {
 		File configFile = new File("config//CustomMacros.json");
 		File testFile1 = new File("config//thisTest.json");
-		//createJson(testFile1);
+		// createJson(testFile1);
 		System.out.println(bakJson(configFile, "CustomMacros"));
-		//createJson(configFile);
-		//File testFile = new File("config//Test//Test.json");
+		// createJson(configFile);
+		// File testFile = new File("config//Test//Test.json");
 		try {
-			//testFile.createNewFile();
-		} catch(Exception e) {
+			// testFile.createNewFile();
+		} catch (Exception e) {
 			System.out.println("Test: " + e);
 		}
 	}
-	
-	public static void generateJsonFile() {
-		String relativePath = MacroFromJson.RelativePath;
-		String filePath = MacroFromJson.filePath;
-		String fileName = MacroFromJson.fileName;
-		File configFolder = new File(filePath);
-		File configFile = new File(relativePath);
 
-		if (configFolder.exists()) {
+	public static void generateJsonFile() {
+		String relativePath = MacroFromJson.relativePath;
+		String parentPath = MacroFromJson.parentPath;
+		String shortFileName = MacroFromJson.shortFileName;
+		File configDir = new File(parentPath);
+		File configFile = new File(relativePath);
+		if (configDir.exists()) {
 			if (configFile.exists()) {
-				bakJson(configFile, "CustomMacros");
-				createJson(configFile);
+				boolean bakSuccess = bakJson(configFile, shortFileName);
+				if (bakSuccess) {
+					createJson(configFile);
+				}
 			} else {
 				// create macro.json
 				createJson(configFile);
 			}
 		} else {
 			// create config folder&macro.json
-			createConfig(configFile);
+			createDir(configDir);
 			createJson(configFile);
 		}
 	}
 
-	private static boolean createJson(File ConfigFile) {
+	private static boolean createJson(File configFile) {
 		boolean returnVal = false;
 		try {
-			returnVal = ConfigFile.createNewFile();
-			fillJson(ConfigFile.getPath());
+			returnVal = configFile.createNewFile();
+			fillJson(configFile.getPath());
 		} catch (Exception e) {
 			System.out.println(e);
 		}
+		if (returnVal) {
+			System.out.println("New default file created at: " + configFile.getPath());
+		} else {
+			System.out.println("Error: default file failed to initialize");
+			System.out.println("Manually restore macro file to: " + configFile.getPath());
+		}
 		return returnVal;
 	}
-	
+
 	private static boolean bakJson(File source, String bakFileName) {
 		try {
-		String folderPath = source.getParent();
-		File backup;
-		int attempts = 0;
-		boolean bakMade = false;
-		while (!bakMade && attempts < 10) {
-			backup = new File(folderPath + "//" + bakFileName + "Bak" + attempts + ".json");
-			attempts++;
-			bakMade = source.renameTo(backup);
-			if(bakMade) {
-				System.out.println("\nBackup of: " + source.getName() + "\nCreated at: " + backup.getName()+ "\n");
-				createJson(source);
+			String folderPath = source.getParent();
+			File backup;
+			int attempts = 0;
+			boolean bakMade = false;
+			while (!bakMade && attempts < 10) {
+				backup = new File(folderPath + "//" + bakFileName + "Bak" + attempts + ".json");
+				attempts++;
+				bakMade = source.renameTo(backup);
+				if (bakMade) {
+					System.out.println("\nBackup of: " + source.getName() + "\nCreated at: " + backup.getName() + "\n");
+					System.out.println("Press ctrl+b to open file location");
+					createJson(source);
+				} else {
+					System.out.println("\nError: Backup Failed");
+					System.out.println(
+							"Processing does not have file editing permissions. Please install config file manually");
+				}
 			}
-		}
-		return bakMade;
+			return bakMade;
 		} catch (Exception e) {
 			System.out.println("bakJson: " + e);
 		}
 		return false;
 	}
 
-	private static void createConfig(File ConfigFile) {
+	private static boolean createDir(File configDir) {
+		boolean success = false;
 		try {
-			ConfigFile.createNewFile();
-			createJson(ConfigFile);
+			if (!configDir.exists()) {
+				success = configDir.mkdirs();
+			}
 		} catch (Exception e) {
 			System.out.println(e);
 		}
-		
+		if (!success) {
+			System.out.println("Error: Could not create config directory");
+		}
+		return success;
 	}
 
 	private static boolean isJson(File jsonFile) {
@@ -134,56 +151,51 @@ public class ConfigInit {
 	private static void fillJson(String path) {
 		try {
 			String backslashQuote = "\\" + "\"";
-			String defaultJson = "{\r\n"
-					+ "    \"CodeSkeletonMacro\":true,\r\n"
-					+ "    \"FunctionMacros\":true,\r\n"
-					+ "    \"input\":true,\r\n"
-					+ "    \"macros\": [";
-			defaultJson+=generateMacroString("for", "(int i=0; i < 10; i++){\\n   \\n}\\n",14,false);
-			defaultJson+=generateMacroString("if", "(){\\n   \\n}\\n",9,false);
-			defaultJson+=generateMacroString("while", "(){\\n   \\n}\\n",9,false);
-			defaultJson+=generateMacroString("do", "{\\n   \\n}while();\\n",3,false);
-			defaultJson+=generateMacroString("switch", "(){\\n   case 1:\\n   break;\\n   default:\\n}\\n",38,true);
-			defaultJson+="\n    ],\r\n"
-					+ "    \"replaceMacros\": [";
-			defaultJson+=generateReplaceMacroString("setup", "void setup(){\\n   \\n}\\n",3,"",false);
-			defaultJson+=generateReplaceMacroString("draw", "void draw(){\\n   \\n}\\n",3,"",false);
-			defaultJson+=generateReplaceMacroString("swing", "import javax.swing.*;\\n",0,"",false);
-			defaultJson+="\n    ]\r\n"
-					+ "}";
-	        //pw.write("this is\n a test");
+			String defaultJson = "{\r\n" + "    \"CodeSkeletonMacro\":true,\r\n" + "    \"FunctionMacros\":true,\r\n"
+					+ "    \"input\":true,\r\n" + "    \"macros\": [";
+			defaultJson += generateMacroString("for", "(int i=0; i < 10; i++){\\n   \\n}\\n", 14, false);
+			defaultJson += generateMacroString("if", "(){\\n   \\n}\\n", 9, false);
+			defaultJson += generateMacroString("while", "(){\\n   \\n}\\n", 9, false);
+			defaultJson += generateMacroString("do", "{\\n   \\n}while();\\n", 3, false);
+			defaultJson += generateMacroString("switch", "(){\\n   case 1:\\n   break;\\n   default:\\n}\\n", 38, true);
+			defaultJson += "\n    ],\r\n" + "    \"replaceMacros\": [";
+			defaultJson += generateReplaceMacroString("setup", "void setup(){\\n   \\n}\\n", 3, "", false);
+			defaultJson += generateReplaceMacroString("draw", "void draw(){\\n   \\n}\\n", 3, "", false);
+			defaultJson += generateReplaceMacroString("swing", "import javax.swing.*;\\n", 0, "", true);
+			defaultJson += "\n    ]\r\n" + "}";
 			PrintWriter pw = new PrintWriter(path);
 			pw.write(defaultJson);
 			pw.flush();
-	        pw.close();
+			pw.close();
 		} catch (Exception e) {
 			System.out.println("fillJson Error: " + e);
 		}
-		
+
 	}
+
 	private static String generateMacroString(String key, String code, int carback, boolean last) {
-		String s ="";
-		s+="\n        {";
-		s+="\n            \"key\":\"" + key + "\",";
-		s+="\n            \"code\": \"" + code + "\",";
-		s+="\n            \"carBack\":"+carback;
-		s+="\n        }";
+		String s = "";
+		s += "\n        {";
+		s += "\n            \"key\":\"" + key + "\",";
+		s += "\n            \"code\": \"" + code + "\",";
+		s += "\n            \"carBack\":" + carback;
+		s += "\n        }";
 		if (!last) {
-			s+=",";
+			s += ",";
 		}
 		return s;
 	}
-	
+
 	private static String generateReplaceMacroString(String key, String code, int carback, String imp, boolean last) {
-		String s ="";
-		s+="\n        {";
-		s+="\n            \"key\":\"" + key + "\",";
-		s+="\n            \"code\": \"" + code + "\",";
-		s+="\n            \"carBack\":"+carback + ",";
-		s+="\n            \"import\": \"" + imp+"\"";
-		s+="\n        }";
+		String s = "";
+		s += "\n        {";
+		s += "\n            \"key\":\"" + key + "\",";
+		s += "\n            \"code\": \"" + code + "\",";
+		s += "\n            \"carBack\":" + carback + ",";
+		s += "\n            \"import\": \"" + imp + "\"";
+		s += "\n        }";
 		if (!last) {
-			s+=",";
+			s += ",";
 		}
 		return s;
 	}
