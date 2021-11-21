@@ -1,5 +1,6 @@
 /**
- * you can put a one sentence description of your tool here.
+ * Allows users to use keywords that can autocomplete to code snippets.
+ * Additionally, it can create a template json file to get usesrs started.
  *
  * ##copyright##
  *
@@ -27,7 +28,6 @@ package MacroFromJson;
 
 import java.io.File;
 import java.io.FileReader;
-import java.io.FileNotFoundException;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
@@ -36,16 +36,13 @@ import processing.app.Base;
 import processing.app.tools.Tool;
 import processing.app.ui.Editor;
 
+/**
+ * Is the Main class Primary behaviour flow goes through run() and keyPressed()
+ */
 public class MacroFromJson implements Tool, KeyListener {
 
 	Base base;
 	Editor editor;
-
-	// String variables to specify the macros.json file
-	public static String parentPath = "config//";
-	public static String shortFileName = "macros";
-	public static String fileName = shortFileName + ".json";
-	public static String relativePath = parentPath + fileName;
 
 	// Array to store all macros. Populated by initMacroList class
 	public static Macros[] macroList;
@@ -60,29 +57,28 @@ public class MacroFromJson implements Tool, KeyListener {
 		this.base = base;
 	}
 
+	/**
+	 * Runs once for setup
+	 */
 	public void run() {
 		// Run this Tool on the currently active Editor window
-		System.out.println("MacroFromJson is running.");
-		System.out.println();
+		System.out.println(Const.LOAD_MESSAGE);
 		editor = base.getActiveEditor();
 		editor.getTextArea().addKeyListener(this);
 
-		checkConfig();// Checks macros.json exists or warns user to create
-
-		try {
-			macroList = InitMacroList.parseMacro(relativePath);
-		} catch (Exception e) {
-			System.out.println("Init Failed:");
-			System.out.println(e);
-		}
+		// Initialize macroList
+		macroList = InitMacroList.parseMacros(Const.relativePath, "");
 	}
 
+	/**
+	 * Used by Processing to fill Tools dropdown menu
+	 */
 	public String getMenuTitle() {
 		return "MacroFromJson";
 	}
 
 	/**
-	 * Captures user command inputs
+	 * Primary source of functionality: Captures user command inputs
 	 * 
 	 * On ctrl+Space checks text before the caret to find a match in macroList and
 	 * runs Macros.instert on that instance
@@ -96,6 +92,7 @@ public class MacroFromJson implements Tool, KeyListener {
 	@Override
 	public void keyPressed(KeyEvent ke) {
 		// Runs when ctrl+space are pressed.
+		// Used to trigger macro behaviour
 		if (ke.getKeyCode() == KeyEvent.VK_SPACE && ke.getModifiersEx() == InputEvent.CTRL_DOWN_MASK) {
 			ke.consume();
 			String txt = getTextBeforeCaret();
@@ -105,37 +102,39 @@ public class MacroFromJson implements Tool, KeyListener {
 				m.insert(editor, indent);
 			}
 		}
-		// Runs when ctrl+shift+b are pressed. Used to create new macro file.
+		// Runs when ctrl+shift+b are pressed.
+		// Used to create new macro file.
 		if (ke.getKeyCode() == KeyEvent.VK_B && ke.isControlDown() && ke.isShiftDown()) {
 			if (setDefault) {
 				ConfigInit.generateJsonFile();
-				macroList = InitMacroList.parseMacro(relativePath);
+				macroList = InitMacroList.parseMacros(Const.relativePath, "");
 				setDefault = false;
 			} else {
-				System.out.println("\n\n\n");
-				System.out.println("Are you sure you want to restore default macros?");
-				System.out.println("Press ctrl+shift+b again to confirm");
-				System.out.println("Press ctrl+b to cancel");
-				System.out.println("");
+				System.out.println(Const.CONFIRM_DEFAULT);
+				
 				setDefault = true;
 			}
 		}
-		// Runs when ctrl+b are pressed. Used to open macro file and re-initialize the
-		// macroList
+		// Runs when ctrl+b are pressed.
+		// Used to open macro file and re-initialize the macroList
 		if (ke.getKeyCode() == KeyEvent.VK_B && ke.getModifiersEx() == InputEvent.CTRL_DOWN_MASK) {
 			setDefault = false;
 			try {
+				// First triggered
+				// Opens file location for editing
 				if (openExplorer) {
-					File myPath = new File(parentPath);
+					File myPath = new File(Const.parentPath);
 					Desktop desktop = Desktop.getDesktop();
 					desktop.open(myPath);
-					System.out.println("\n\n\n");
-					System.out.println("After making changes to the Json file, press ctrl+b to enable new macros.");
+					System.out.println(Const.SAVE_MESSAGE);
+					macroList = InitMacroList.parseMacros(Const.relativePath, "Before change: ");
 					openExplorer = false;
+					
+					// Second trigger
+					// updates macroList with any changes
 				} else {
-					macroList = InitMacroList.parseMacro(relativePath);
-					System.out.println("Macro list has been updated");
-					System.out.println("");
+					macroList = InitMacroList.parseMacros(Const.relativePath, "After change: ");
+					System.out.println(Const.UPDATED);
 					openExplorer = true;
 				}
 			} catch (Exception e) {
@@ -163,7 +162,6 @@ public class MacroFromJson implements Tool, KeyListener {
 				}
 			}
 		}
-
 		return start - i;
 	}
 
@@ -179,7 +177,6 @@ public class MacroFromJson implements Tool, KeyListener {
 			int i = start;
 			String edtext = editor.getText();
 			char c = edtext.charAt(start);
-//            while ((Character.isLetterOrDigit(c)||c == '/')&& i >= 0) {
 			while ((Character.isLetterOrDigit(c) || (c >= 33 && c <= 126)) && i >= 0) {
 				i--;
 				if (i >= 0) {
@@ -201,7 +198,13 @@ public class MacroFromJson implements Tool, KeyListener {
 	public void keyReleased(KeyEvent ke) {
 	}
 
-//returns macro object from ConcatJson.macrosJsonList where key=sstr else null
+	/**
+	 * Returns macro object from ConcatJson.macrosJsonList where key=sstr else null
+	 * 
+	 * @param editor
+	 * @param sstr   search term
+	 * @return macro matching search term
+	 */
 	public static Macros find(Editor editor, String sstr) {
 		for (int i = 0; i < macroList.length; i++) {
 			if (macroList[i] != null) {
@@ -212,32 +215,5 @@ public class MacroFromJson implements Tool, KeyListener {
 			}
 		}
 		return null;
-	}
-
-	/**
-	 * Ensures either the macros.json file exists Or prompts user to create new
-	 * file.
-	 */
-	private static void checkConfig() {
-		File myFile = new File(relativePath);
-		String myPath = relativePath;
-		try {
-			myPath = myFile.getCanonicalPath();
-			if (myFile.exists()) {
-				System.out.println("Config file found at:");
-				System.out.println(myPath);
-			} else {
-				throw new FileNotFoundException("(The system cannot find the file specified)");
-			}
-		} catch (Exception e) {
-			System.out.println("Config file, " + fileName + ", missing at: ");
-			System.out.println(myPath);
-			System.out.println("Press ctrl+b to open file location");
-			System.out.println("Press ctrl+shift+b to generate default jsonFile");
-			System.out.println("");
-			System.out.println(e);
-			System.out.println("\n\n\n");
-			
-		}
 	}
 }

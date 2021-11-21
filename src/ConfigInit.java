@@ -1,10 +1,26 @@
 /**
- * 
- */
-
-/**
- * @author Admin
+ * Part of the MacroFromJson tool for Processing
  *
+ * ##copyright##
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General
+ * Public License along with this library; if not, write to the
+ * Free Software Foundation, Inc., 59 Temple Place, Suite 330,
+ * Boston, MA  02111-1307  USA
+ *
+ * @author   ##author##
+ * @modified ##date##
+ * @version  ##tool.prettyVersion##
  */
 
 package MacroFromJson;
@@ -25,37 +41,26 @@ import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.*;
 
-//MacroFromJson.relativePath
-//MacroFromJson.fileName
-//MacroFromJson.filePath
-
-//Checks if macro file exists. If it does, backup and reset. Else create new.
-//Open file explorer
-
+/**
+ * ConfigInit class creates and manages json file. Can create config directory,
+ * new template files.json, and .json file backups
+ */
 public class ConfigInit {
 
-	private static String bakFileName = "bakMacros";
-
-	public static void Test() {
-		File configFile = new File("config//CustomMacros.json");
-		File testFile1 = new File("config//thisTest.json");
-		// createJson(testFile1);
-		System.out.println(bakJson(configFile, "CustomMacros"));
-		// createJson(configFile);
-		// File testFile = new File("config//Test//Test.json");
-		try {
-			// testFile.createNewFile();
-		} catch (Exception e) {
-			System.out.println("Test: " + e);
-		}
-	}
-
+	/**
+	 * Checks current congif directory situation 
+	 * And creates a new (file)macros.json / (dir)config as needed. 
+	 * 
+	 * If macros.json exists, renames it 
+	 * And creates a new macros.json file with template macros.
+	 */
 	public static void generateJsonFile() {
-		String relativePath = MacroFromJson.relativePath;
-		String parentPath = MacroFromJson.parentPath;
-		String shortFileName = MacroFromJson.shortFileName;
+		String relativePath = Const.relativePath;
+		String parentPath = Const.parentPath;
+		String shortFileName = Const.shortFileName;
 		File configDir = new File(parentPath);
 		File configFile = new File(relativePath);
+
 		if (configDir.exists()) {
 			if (configFile.exists()) {
 				bakJson(configFile, shortFileName);
@@ -70,6 +75,12 @@ public class ConfigInit {
 		}
 	}
 
+	/**
+	 * Tries to create new file and populate with template macros
+	 * @param configFile 
+	 * 		File location to create new file
+	 * @return If creation succeeded
+	 */
 	private static boolean createJson(File configFile) {
 		boolean returnVal = false;
 		try {
@@ -79,14 +90,21 @@ public class ConfigInit {
 			System.out.println(e);
 		}
 		if (returnVal) {
-			System.out.println("New default file created at: " + configFile.getPath());
+			System.out.println(Const.DEFAULT_SUCCESS + configFile.getPath());
 		} else {
-			System.out.println("Error: default file failed to initialize");
-			System.out.println("Manually restore macro file to: " + configFile.getPath());
+			System.out.println(Const.DEFAULT_FAILED+configFile.getPath());
 		}
 		return returnVal;
 	}
 
+	/**
+	 * Renames file and calls createJson() to replace the moved file
+	 * @param source 
+	 * 		Location of file to be moved and replaced
+	 * @param bakFileName
+	 * 		Core name of target backup location
+	 * @return If bakup succeeded
+	 */
 	private static boolean bakJson(File source, String bakFileName) {
 		try {
 			String folderPath = source.getParent();
@@ -99,16 +117,13 @@ public class ConfigInit {
 				bakMade = source.renameTo(backup);
 			}
 			if (bakMade) {
+				bakMade = createJson(source);
 				System.out.println("\nBackup of: " + source.getName() + "\nCreated at: " + backup.getName());
-				System.out.println("Press ctrl+b to open file location\n");
-				createJson(source);
+				System.out.println(Const.OPEN_FILE);
 			} else if (attempts == 10) {
-				System.out.println("\nError: too many backups in config folder");
-				System.out.println("Press ctrl+b to open file location");
+				System.out.println(Const.BAK_OVERFLOW + Const.OPEN_FILE);
 			} else {
-				System.out.println("\nError: Backup Failed");
-				System.out.println(
-						"Processing does not have file editing permissions. Please install config file manually");
+				System.out.println(Const.BAK_FAILED);
 			}
 			return bakMade;
 		} catch (Exception e) {
@@ -117,6 +132,12 @@ public class ConfigInit {
 		return false;
 	}
 
+	/**
+	 * Creates config directory
+	 * @param configDir 
+	 * 		directory location
+	 * @return If createDir succeeded
+	 */
 	private static boolean createDir(File configDir) {
 		boolean success = false;
 		try {
@@ -127,44 +148,20 @@ public class ConfigInit {
 			System.out.println(e);
 		}
 		if (!success) {
-			System.out.println("Error: Could not create config directory");
+			System.out.println(Const.DIR_FAILED);
 		}
 		return success;
 	}
-
-	private static boolean isJson(File jsonFile) {
-		String extension = "";
-		try {
-			if (jsonFile != null && jsonFile.exists()) {
-				String name = jsonFile.getName();
-				extension = name.substring(name.lastIndexOf("."));
-			}
-		} catch (Exception e) {
-			System.out.println("ConfigInit.isJson: \n" + e);
-		}
-		System.out.println("ConfigInit.isJson extension = |" + extension + "|");
-		System.out.println(extension.equals(".json"));
-		boolean isSame = (extension.equals(".json"));
-		return isSame;
-	}
-
+	
+	/**
+	 * Populates file with template macros
+	 * @param path 
+	 * 		Location of file to populate
+	 */
 	private static void fillJson(String path) {
 		try {
-			String backslashQuote = "\\" + "\"";
-			String defaultJson = "{\r\n" + "    \"CodeSkeletonMacro\":true,\r\n" + "    \"FunctionMacros\":true,\r\n"
-					+ "    \"input\":true,\r\n" + "    \"macros\": [";
-			defaultJson += generateMacroString("for", "(int i=0; i < 10; i++){\\n   \\n}\\n", 14, false);
-			defaultJson += generateMacroString("if", "(){\\n   \\n}\\n", 9, false);
-			defaultJson += generateMacroString("while", "(){\\n   \\n}\\n", 9, false);
-			defaultJson += generateMacroString("do", "{\\n   \\n}while();\\n", 3, false);
-			defaultJson += generateMacroString("switch", "(){\\n   case 1:\\n   break;\\n   default:\\n}\\n", 38, true);
-			defaultJson += "\n    ],\r\n" + "    \"replaceMacros\": [";
-			defaultJson += generateReplaceMacroString("setup", "void setup(){\\n   \\n}\\n", 3, "", false);
-			defaultJson += generateReplaceMacroString("draw", "void draw(){\\n   \\n}\\n", 3, "", false);
-			defaultJson += generateReplaceMacroString("swing", "import javax.swing.*;\\n", 0, "", true);
-			defaultJson += "\n    ]\r\n" + "}";
 			PrintWriter pw = new PrintWriter(path);
-			pw.write(defaultJson);
+			pw.write(Const.DEFAULT_JSON());
 			pw.flush();
 			pw.close();
 		} catch (Exception e) {
@@ -173,30 +170,5 @@ public class ConfigInit {
 
 	}
 
-	private static String generateMacroString(String key, String code, int carback, boolean last) {
-		String s = "";
-		s += "\n        {";
-		s += "\n            \"key\":\"" + key + "\",";
-		s += "\n            \"code\": \"" + code + "\",";
-		s += "\n            \"carBack\":" + carback;
-		s += "\n        }";
-		if (!last) {
-			s += ",";
-		}
-		return s;
-	}
-
-	private static String generateReplaceMacroString(String key, String code, int carback, String imp, boolean last) {
-		String s = "";
-		s += "\n        {";
-		s += "\n            \"key\":\"" + key + "\",";
-		s += "\n            \"code\": \"" + code + "\",";
-		s += "\n            \"carBack\":" + carback + ",";
-		s += "\n            \"import\": \"" + imp + "\"";
-		s += "\n        }";
-		if (!last) {
-			s += ",";
-		}
-		return s;
-	}
+	
 }
