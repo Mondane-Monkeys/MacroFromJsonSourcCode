@@ -1,6 +1,6 @@
 /**
  * Allows users to use keywords that can autocomplete to code snippets.
- * Additionally, it can create a template json file to get usesrs started.
+ * Additionally, it can create a template json file to get users started.
  *
  * ##copyright##
  *
@@ -37,7 +37,7 @@ import processing.app.tools.Tool;
 import processing.app.ui.Editor;
 
 /**
- * Is the Main class Primary behaviour flow goes through run() and keyPressed()
+ *  MacroFromJson is the main class. Primary function flow goes through run() and keyPressed()
  */
 public class MacroFromJson implements Tool, KeyListener {
 

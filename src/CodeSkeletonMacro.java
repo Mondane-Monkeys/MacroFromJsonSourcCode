@@ -52,6 +52,5 @@ public class CodeSkeletonMacro extends Macros {
 	public void insert(Editor editor, int indent) {
 		editor.setText(CODE_SKELETON);
 		editor.getTextArea().setCaretPosition(CARETPOS);
-		// System.out.println("editor.getCaretOffset() = " + editor.getCaretOffset());
 	}
 }
