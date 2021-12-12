@@ -36,6 +36,10 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.ArrayList;
+import java.util.regex.*;
+
+import javax.sound.midi.spi.SoundbankReader;
+import javax.xml.transform.Source;
 
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
@@ -46,9 +50,65 @@ import org.json.simple.parser.*;
  * new template files.json, and .json file backups
  */
 public class ConfigInit {
-
+	
+	
+	public static void saveJsonFile(String fileContents, File source) {
+		
+		File bak1 = getBakString(source,"1");
+		File bak2 = getBakString(source,"2");
+		//Move files around
+		simpleDeleteFile(bak2);
+		moveFile(bak1,bak2);
+		moveFile(source,bak1);
+		//create new file
+		createJson(fileContents, source);
+	}
+	
 	/**
-	 * Checks current congif directory situation 
+	 * Takes file source and destination, ensures no issues,
+	 * Then renames source to be equal to destination
+	 * @param source source file to be moved
+	 * @param dest destination file name to move to
+	 * @return If move successful
+	 */
+	private static boolean moveFile(File source, File dest) {
+		boolean sourceExists;
+		boolean destAvailable;
+		boolean moveSuccess = false;
+		if (!source.exists()) {
+			//Handle missingSource issue
+			sourceExists = false;
+		} else {sourceExists = true;}
+		
+		if (dest.exists()) {
+			//Handle duplicate file issue
+			destAvailable = false;
+		} else {destAvailable = true;}
+		
+		if (sourceExists&&destAvailable) {
+			//move file
+			moveSuccess = source.renameTo(dest);
+		}
+		return moveSuccess;
+	}
+	
+	private static boolean simpleDeleteFile(File source) {
+		boolean deleteSuccess;
+		deleteSuccess = source.exists() ? source.delete() : false;
+		return deleteSuccess;
+	}
+	
+	private static File getBakString(File source, String append) {
+		String fileName = source.getPath();
+//		System.out.println("Token: " + fileName);
+		String[] tokens = fileName.split("\\.(?=[^\\.]+$)");
+//		System.out.println("Token: " + tokens[0]);
+//		System.out.println("Token: " + tokens[1]);
+		return new File(tokens[0]+append+"."+tokens[1]);
+	}
+	
+	/**
+	 * Checks current config directory situation 
 	 * And creates a new (file)macros.json / (dir)config as needed. 
 	 * 
 	 * If macros.json exists, renames it 
@@ -96,7 +156,23 @@ public class ConfigInit {
 		}
 		return returnVal;
 	}
-
+	
+	private static boolean createJson(String contents, File configFile) {
+		boolean returnVal = false;
+		try {
+			returnVal = configFile.createNewFile();
+			fillJson(contents, configFile.getPath());
+		} catch (Exception e) {
+			System.out.println(e);
+		}
+		if (returnVal) {
+			System.out.println(Const.DEFAULT_SUCCESS + configFile.getPath());
+		} else {
+			System.out.println(Const.DEFAULT_FAILED+configFile.getPath());
+		}
+		return returnVal;
+	}
+	
 	/**
 	 * Renames file and calls createJson() to replace the moved file
 	 * @param source 
@@ -167,8 +243,21 @@ public class ConfigInit {
 		} catch (Exception e) {
 			System.out.println("fillJson Error: " + e);
 		}
-
 	}
-
 	
+	/**
+	 * Populates file with template macros
+	 * @param path 
+	 * 		Location of file to populate
+	 */
+	private static void fillJson(String contents, String path) {
+		try {
+			PrintWriter pw = new PrintWriter(path);
+			pw.write(contents);
+			pw.flush();
+			pw.close();
+		} catch (Exception e) {
+			System.out.println("fillJson Error: " + e);
+		}
+	}
 }

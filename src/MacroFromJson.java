@@ -67,7 +67,7 @@ public class MacroFromJson implements Tool, KeyListener {
 		editor.getTextArea().addKeyListener(this);
 
 		// Initialize macroList
-		macroList = InitMacroList.parseMacros(Const.relativePath, "");
+		macroList = InitMacroList.parseMacros(Const.relativePath, "", true);
 	}
 
 	/**
@@ -107,11 +107,10 @@ public class MacroFromJson implements Tool, KeyListener {
 		if (ke.getKeyCode() == KeyEvent.VK_B && ke.isControlDown() && ke.isShiftDown()) {
 			if (setDefault) {
 				ConfigInit.generateJsonFile();
-				macroList = InitMacroList.parseMacros(Const.relativePath, "");
+				macroList = InitMacroList.parseMacros(Const.relativePath, "", true);
 				setDefault = false;
 			} else {
 				System.out.println(Const.CONFIRM_DEFAULT);
-				
 				setDefault = true;
 			}
 		}
@@ -119,6 +118,9 @@ public class MacroFromJson implements Tool, KeyListener {
 		// Used to open macro file and re-initialize the macroList
 		if (ke.getKeyCode() == KeyEvent.VK_B && ke.getModifiersEx() == InputEvent.CTRL_DOWN_MASK) {
 			setDefault = false;
+			MacroGui macEdit = new MacroGui();
+			macEdit.createFrame();
+			//TestGui.createFrame();
 			try {
 				// First triggered
 				// Opens file location for editing
@@ -127,13 +129,13 @@ public class MacroFromJson implements Tool, KeyListener {
 					Desktop desktop = Desktop.getDesktop();
 					desktop.open(myPath);
 					System.out.println(Const.SAVE_MESSAGE);
-					macroList = InitMacroList.parseMacros(Const.relativePath, "Before change: ");
+					macroList = InitMacroList.parseMacros(Const.relativePath, "Before change: ", true);
 					openExplorer = false;
 					
 					// Second trigger
 					// updates macroList with any changes
 				} else {
-					macroList = InitMacroList.parseMacros(Const.relativePath, "After change: ");
+					macroList = InitMacroList.parseMacros(Const.relativePath, "After change: ", true);
 					System.out.println(Const.UPDATED);
 					openExplorer = true;
 				}

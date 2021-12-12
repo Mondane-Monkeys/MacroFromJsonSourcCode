@@ -1,5 +1,4 @@
-/**
- * Part of the MacroFromJson tool for Processing
+ /* Part of the MacroFromJson tool for Processing
  *
  * ##copyright##
  *
@@ -18,41 +17,46 @@
  * Free Software Foundation, Inc., 59 Temple Place, Suite 330,
  * Boston, MA  02111-1307  USA
  *
- *
- * @author dahjon
- * @modifiedBy ##author##
+ * @author   ##author##
  * @modified ##date##
  * @version  ##tool.prettyVersion##
  */
-package MacroFromJson;
 
-import java.lang.constant.Constable;
+package MacroFromJson;
 
 import processing.app.ui.Editor;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.ObjectInputStream.GetField;
+import java.lang.constant.Constable;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.ArrayList;
+
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.*;
+
 /**
- * @author dahjon - http://jonathan.dahlberg.media/ecc/
- * CodeSkeletonMacro Class takes an empty editor and adds setup and draw.
+ * MacroGroup class creates MacroGroup objects
  */
-public class CodeSkeletonMacro extends Macros {
+public class MacroGroup {
 
-	public static final String CODE_SKELETON = "void setup() {\n" + "   size(500, 500);\n" + "   \n" + "}\n" + "\n"
-			+ "void draw() {\n" + "   \n" + "}\n";
-
-	public static final int CARETPOS = 37;
-
-	public CodeSkeletonMacro() {
-		super("", "", 0, "", false, Const.defaultGroup);
+	protected String name;
+	protected boolean isActive;
+	
+	public MacroGroup(String name, boolean isActive) {
+		this.name = name;
+		this.isActive = isActive;
 	}
-
-	@Override
-	public boolean stringIsThisMacro(Editor editor, String sstr) {
-		return editor.getText().trim().length() == 0;
+	
+	public String getName() {
+		return name;
 	}
-
-	@Override
-	public void insert(Editor editor, int indent) {
-		editor.setText(CODE_SKELETON);
-		editor.getTextArea().setCaretPosition(CARETPOS);
+	
+	public boolean getIsActive() {
+		return isActive;
 	}
 }
