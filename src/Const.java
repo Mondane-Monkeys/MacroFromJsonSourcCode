@@ -33,6 +33,15 @@ public class Const {
 	public static String groupArrName = "macroGroups";
 	//GUI Constants
 	public static String GUI_NAME = "Processing's Macro Editor";
+	public static String newMacroGroup = "Default";
+	
+	//Tool tips
+	public static String idToolTip = "<html>id test</html>";
+	public static String keyToolTip = "<html>This is the trigger word to call a macro.</html>";
+	public static String codeToolTip = "<html>This is the text that will be inserted into your code.</html>";
+	public static String carbackToolTip = "<html>Sets the resting place of the cursor after the macro is run.<br>Set to 0 to leave the cursor at the end of the inserted macro.</html>";
+	public static String replaceToolTip = "<html>Toggle if the key is removed after the macro runs</html>";
+	public static String groupToolTip = "<html>Sets the group for this key.<br>You can enable or disable macro groups without losing the macro.</html>";
 	
 	
 	// Message Constants
